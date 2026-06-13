@@ -48,3 +48,27 @@ def set_cached_prediction(r: redis.Redis, cache_key: str, response_dict: Dict[st
             r.set(cache_key, json.dumps(response_dict), ex=ttl)
         except Exception as e:
             print(f"Warning: Failed to cache in Redis: {e}")
+
+def set_dataframe(r: redis.Redis, key: str, df: Any):
+    """Serialize and store pandas DataFrame/Series to Redis using JSON (orient='split')"""
+    if r is not None and df is not None:
+        try:
+            import pandas as pd
+            if isinstance(df, pd.Series):
+                df = df.to_frame()
+            r.set(key, df.to_json(orient='split'))
+        except Exception as e:
+            print(f"Warning: Failed to save DataFrame to Redis: {e}")
+
+def get_dataframe(r: redis.Redis, key: str) -> Optional[Any]:
+    """Retrieve and deserialize pandas DataFrame from Redis using JSON (orient='split')"""
+    if r is not None:
+        try:
+            import pandas as pd
+            data = r.get(key)
+            if data:
+                return pd.read_json(data, orient='split')
+        except Exception as e:
+            print(f"Warning: Failed to retrieve DataFrame from Redis: {e}")
+    return None
+
