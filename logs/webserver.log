@@ -1,0 +1,57 @@
+/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/configuration.py:401 DeprecationWarning: The grid_view_sorting_order option in [webserver] has been moved to the grid_view_sorting_order option in [api] - the old setting has been used, but please update your config.
+/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/configuration.py:402 DeprecationWarning: The grid_view_sorting_order option in [webserver] has been moved to the grid_view_sorting_order option in [api] - the old setting has been used, but please update your config.
+/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/_shared/configuration/parser.py:440 FutureWarning: The 'log_filename_template' setting in [logging] has the old default value of 'dag_id={{ ti.dag_id }}/run_id={{ ti.run_id }}/task_id={{ ti.task_id }}/{% if ti.map_index >= 0 %}map_index={{ ti.map_index }}/{% endif %}attempt={{ try_number }}.log'. This value has been changed to 'dag_id={{ ti.dag_id }}/run_id={{ ti.run_id }}/task_id={{ ti.task_id }}/{% if ti.map_index >= 0 %}map_index={{ ti.map_index }}/{% endif %}attempt={{ try_number|default(ti.try_number) }}.log' in the running config, but please update your config.
+/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/_shared/configuration/parser.py:440 FutureWarning: The 'executor' setting in [core] has the old default value of 'SequentialExecutor'. This value has been changed to 'LocalExecutor' in the running config, but please update your config.
+[2026-06-09T09:35:38.705125Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/configuration.py:445} WARNING - The secret_key option in [webserver] has been moved to the secret_key option in [api] - the old setting has been used, but please update your config. category=DeprecationWarning
+[2026-06-09T09:35:38.740756Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/dag_processing/bundles/base.py:261} WARNING - The dag_dir_list_interval option in [scheduler] has been moved to the refresh_interval option in [dag_processor] - the old setting has been used, but please update your config. category=DeprecationWarning
+[2026-06-09T09:35:39.642258Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/sdk/api/client.py:906} WARNING - The web_server_ssl_cert option in [webserver] has been moved to the ssl_cert option in [api] - the old setting has been used, but please update your config. category=DeprecationWarning
+[2026-06-09T09:35:42.086228Z] {plugins.py:37} INFO - setup plugin alembic.autogenerate.schemas
+[2026-06-09T09:35:42.086836Z] {plugins.py:37} INFO - setup plugin alembic.autogenerate.tables
+[2026-06-09T09:35:42.087278Z] {plugins.py:37} INFO - setup plugin alembic.autogenerate.types
+[2026-06-09T09:35:42.087697Z] {plugins.py:37} INFO - setup plugin alembic.autogenerate.constraints
+[2026-06-09T09:35:42.088070Z] {plugins.py:37} INFO - setup plugin alembic.autogenerate.defaults
+[2026-06-09T09:35:42.088509Z] {plugins.py:37} INFO - setup plugin alembic.autogenerate.comments
+[2026-06-09T09:35:42.179934Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/sdk/_shared/module_loading/__init__.py:61} WARNING - Importing BaseXCom from 'airflow.models.xcom' is deprecated and will be removed in a future version. Please import from 'airflow.sdk.bases.xcom' instead. category=DeprecatedImportWarning
+[2026-06-09T09:35:42.347801Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/cli/cli_config.py:696} WARNING - The web_server_port option in [webserver] has been moved to the port option in [api] - the old setting has been used, but please update your config. category=DeprecationWarning
+[2026-06-09T09:35:42.348825Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/cli/cli_config.py:702} WARNING - The workers option in [webserver] has been moved to the workers option in [api] - the old setting has been used, but please update your config. category=DeprecationWarning
+[2026-06-09T09:35:42.349692Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/cli/cli_config.py:714} WARNING - The web_server_host option in [webserver] has been moved to the host option in [api] - the old setting has been used, but please update your config. category=DeprecationWarning
+[2026-06-09T09:35:42.350819Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/cli/cli_config.py:734} WARNING - The web_server_ssl_cert option in [webserver] has been moved to the ssl_cert option in [api] - the old setting has been used, but please update your config. category=DeprecationWarning
+[2026-06-09T09:35:42.351572Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/cli/cli_config.py:739} WARNING - The web_server_ssl_key option in [webserver] has been moved to the ssl_key option in [api] - the old setting has been used, but please update your config. category=DeprecationWarning
+
+airflow command error: argument GROUP_OR_COMMAND: Command `airflow webserver` has been removed. Please use `airflow api-server`, see help above.
+Usage: airflow [-h] GROUP_OR_COMMAND ...
+
+Positional Arguments:
+  GROUP_OR_COMMAND
+
+    Groups
+      assets            Manage assets
+      backfill          Manage backfills
+      config            View configuration
+      connections       Manage connections
+      dags              Manage DAGs
+      db                Database operations
+      db-manager        Manage externally connected database managers
+      jobs              Manage jobs
+      pools             Manage pools
+      providers         Display providers
+      tasks             Manage tasks
+      teams             Manage teams
+      variables         Manage variables
+
+    Commands:
+      api-server        Start an Airflow API server instance
+      cheat-sheet       Display cheat sheet
+      dag-processor     Start a dag processor instance
+      info              Show information about current Airflow and environment
+      kerberos          Start a kerberos ticket renewer
+      plugins           Dump information about loaded plugins
+      rotate-fernet-key
+                        Rotate encrypted connection credentials and variables
+      scheduler         Start a scheduler instance
+      standalone        Run an all-in-one copy of Airflow
+      triggerer         Start a triggerer instance
+      version           Show the version
+
+Options:
+  -h, --help            show this help message and exit

@@ -1,34 +1,70 @@
-version: "3.8"
 
 services:
   redis:
     image: redis:7-alpine
     container_name: mlops_redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
 
+  mariadb:
+    image: mariadb:10.11
+    container_name: mlops_mariadb
+    ports:
+      - "3310:3306"
+    environment:
+      - MARIADB_ROOT_PASSWORD=root_password
+      - MARIADB_DATABASE=mlops_db
+      - MARIADB_USER=mlops_user
+      - MARIADB_PASSWORD=mlops_password
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  mlflow:
+    image: python:3.10-slim
+    container_name: mlops_mlflow
+    ports:
+      - "5002:5001"
+    volumes:
+      - ./mlruns:/mlflow/mlruns
+    working_dir: /mlflow
+    command: >
+      sh -c "pip install mlflow && mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root /mlflow/mlruns --host 0.0.0.0 --port 5001 --allowed-hosts '*'"
+
   web:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: mlops_flask
+    container_name: mlops_fastapi
     ports:
-      - "5000:5000"
+      - "8005:8000"
     depends_on:
       redis:
         condition: service_healthy
+      mariadb:
+        condition: service_healthy
     environment:
-      - FLASK_APP=app/app.py
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - DB_HOST=mariadb
+      - DB_USER=mlops_user
+      - DB_PASSWORD=mlops_password
+      - DB_NAME=mlops_db
+      - MLFLOW_TRACKING_URI=http://mlflow:5001
     volumes:
-      - ./app:/app/app
-      - ./app/model.pkl:/app/model.pkl
+      - ./api:/app/api
+      - ./src:/app/src
+      - ./models:/app/models
+      - ./reports:/app/reports
     working_dir: /app
 
   airflow:
@@ -36,12 +72,34 @@ services:
     container_name: mlops_airflow
     environment:
       - AIRFLOW__CORE__DAGS_FOLDER=/opt/airflow/dags
-      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DB_HOST=mariadb
+      - DB_USER=mlops_user
+      - DB_PASSWORD=mlops_password
+      - DB_NAME=mlops_db
+      - MLFLOW_TRACKING_URI=http://mlflow:5001
+      - KAGGLE_USERNAME=shekharlamichhaneMagar
+      - KAGGLE_KEY=KGAT_6f55fde860d9fb9720f0d597773474ba
+      - _PIP_ADDITIONAL_REQUIREMENTS=email-validator>=2.0.0 kaggle pandas numpy<2 scikit-learn mlflow redis pymysql cryptography joblib evidently shap matplotlib seaborn protobuf<4.22.0
     ports:
-      - "8080:8080"
+      - "8081:8080"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
-      - ./airflow/dags:/opt/airflow/dags
-      - ./airflow/logs:/opt/airflow/logs
-      - ./app:/opt/airflow/app
+      - ./dags:/opt/airflow/dags
+      - ./src:/opt/airflow/src
+      - ./data:/opt/airflow/data
+      - ./models:/opt/airflow/models
+      - ./mlruns:/opt/airflow/mlruns
+      - ./data_ingestion:/opt/airflow/data_ingestion
+      - ./reports:/opt/airflow/reports
     command: standalone
+
+volumes:
+  mariadb_data:
