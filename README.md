@@ -10,7 +10,7 @@ A complete MLOps pipeline for e-commerce data processing, model training, and se
 ```
 mlops-ecommerce/
 ├── app/
-│   ├── app.py           # Flask API for predictions
+│   ├── app.py           # FastAPI API for predictions
 │   ├── train.py         # Model training script
 │   └── model.pkl        # Trained model
 ├── airflow/
@@ -52,7 +52,7 @@ mlops-ecommerce/
 
 4. **Run Flask app**:
    ```bash
-   python -m flask run --app app/app.py
+   python -m uvicorn api.app:app --host 0.0.0.0 --port 8000
    ```
 
 ### Docker Setup (Production)

@@ -1,73 +1,89 @@
-"""
-Airflow DAG: MLOps ecommerce pipeline
-Orchestrates: Data Ingestion → Preprocessing → Model Training
-"""
+import sys
+import os
+os.environ["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"] = "YES"
+from pathlib import Path
+
+# Add project root to sys.path
+project_root = str(Path(__file__).resolve().parent.parent)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from datetime import datetime, timedelta
-import sys
-from pathlib import Path
+from datetime import datetime
 
-# Add src to path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root / 'src'))
+# Wrapper callables to defer heavy library imports
+def run_ingest_task():
+    from src.extract import extract
+    from src.load import load
+    print("📥 Starting data extraction...")
+    extract()
+    print("📤 Starting data loading...")
+    load()
 
-# Import pipeline functions
-from data_ingestion import download_dataset
-from preprocessing import run_etl_pipeline
-from train_model import run_training_pipeline
+def run_preprocess_task():
+    from src.transform import transform
+    return transform()
+
+def run_tuning_task():
+    from src.tune import tune
+    return tune()
+
+def run_train_task():
+    from src.train import train
+    return train()
+
+def run_evaluate_task():
+    from src.evaluate import evaluate
+    return evaluate()
 
 default_args = {
-    'owner': 'mlops',
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
-    'start_date': datetime(2024, 1, 1),
+    "owner": "shekhar",
 }
 
-dag = DAG(
-    'ecommerce_ml_pipeline',
+with DAG(
+    dag_id="ecommerce_pipeline",
     default_args=default_args,
-    description='MLOps Pipeline: Fetch → ETL → Train',
-    schedule_interval='0 2 * * *',  # Daily at 2 AM
+    start_date=datetime(2025, 1, 1),
+    schedule="@daily",
     catchup=False,
-)
+) as dag:
 
-# Task 1: Data Ingestion
-def task_data_ingestion():
-    print("🔗 Task 1: Downloading dataset...")
-    download_dataset()
-    print("✅ Dataset ready")
+    task_ingest = PythonOperator(
+        task_id="ingest_data",
+        python_callable=run_ingest_task,
+        do_xcom_push=False,
+    )
 
-task_ingest = PythonOperator(
-    task_id='data_ingestion',
-    python_callable=task_data_ingestion,
-    dag=dag,
-)
+    task_preprocess = PythonOperator(
+        task_id="preprocess_data",
+        python_callable=run_preprocess_task,
+        do_xcom_push=False,
+    )
 
-# Task 2: Preprocessing
-def task_preprocessing():
-    print("🧹 Task 2: Running ETL pipeline...")
-    run_etl_pipeline()
-    print("✅ Data preprocessed")
+    task_tuning = PythonOperator(
+        task_id="tune_hyperparameters",
+        python_callable=run_tuning_task,
+        do_xcom_push=False,
+    )
 
-task_preprocess = PythonOperator(
-    task_id='preprocessing',
-    python_callable=task_preprocessing,
-    dag=dag,
-)
+    task_train = PythonOperator(
+        task_id="train_model",
+        python_callable=run_train_task,
+        do_xcom_push=False,
+    )
 
-# Task 3: Model Training
-def task_training():
-    print("🤖 Task 3: Training model...")
-    run_training_pipeline()
-    print("✅ Model trained")
+    task_evaluate = PythonOperator(
+        task_id="evaluate_model",
+        python_callable=run_evaluate_task,
+        do_xcom_push=False,
+    )
 
-task_train = PythonOperator(
-    task_id='model_training',
-    python_callable=task_training,
-    dag=dag,
-)
+    (
+        task_ingest
+        >> task_preprocess
+        >> task_tuning
+        >> task_train
+        >> task_evaluate
+    )
 
-# Define dependencies
-task_ingest >> task_preprocess >> task_train

@@ -1,0 +1,98 @@
+/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/configuration.py:401 DeprecationWarning: The grid_view_sorting_order option in [webserver] has been moved to the grid_view_sorting_order option in [api] - the old setting has been used, but please update your config.
+/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/configuration.py:402 DeprecationWarning: The grid_view_sorting_order option in [webserver] has been moved to the grid_view_sorting_order option in [api] - the old setting has been used, but please update your config.
+/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/_shared/configuration/parser.py:440 FutureWarning: The 'log_filename_template' setting in [logging] has the old default value of 'dag_id={{ ti.dag_id }}/run_id={{ ti.run_id }}/task_id={{ ti.task_id }}/{% if ti.map_index >= 0 %}map_index={{ ti.map_index }}/{% endif %}attempt={{ try_number }}.log'. This value has been changed to 'dag_id={{ ti.dag_id }}/run_id={{ ti.run_id }}/task_id={{ ti.task_id }}/{% if ti.map_index >= 0 %}map_index={{ ti.map_index }}/{% endif %}attempt={{ try_number|default(ti.try_number) }}.log' in the running config, but please update your config.
+/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/_shared/configuration/parser.py:440 FutureWarning: The 'executor' setting in [core] has the old default value of 'SequentialExecutor'. This value has been changed to 'LocalExecutor' in the running config, but please update your config.
+[2026-06-09T09:35:32.274053Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/configuration.py:445} WARNING - The secret_key option in [webserver] has been moved to the secret_key option in [api] - the old setting has been used, but please update your config. category=DeprecationWarning
+[2026-06-09T09:35:32.288773Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/dag_processing/bundles/base.py:261} WARNING - The dag_dir_list_interval option in [scheduler] has been moved to the refresh_interval option in [dag_processor] - the old setting has been used, but please update your config. category=DeprecationWarning
+[2026-06-09T09:35:33.032840Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/sdk/api/client.py:906} WARNING - The web_server_ssl_cert option in [webserver] has been moved to the ssl_cert option in [api] - the old setting has been used, but please update your config. category=DeprecationWarning
+[2026-06-09T09:35:35.614505Z] {plugins.py:37} INFO - setup plugin alembic.autogenerate.schemas
+[2026-06-09T09:35:35.615327Z] {plugins.py:37} INFO - setup plugin alembic.autogenerate.tables
+[2026-06-09T09:35:35.616013Z] {plugins.py:37} INFO - setup plugin alembic.autogenerate.types
+[2026-06-09T09:35:35.616511Z] {plugins.py:37} INFO - setup plugin alembic.autogenerate.constraints
+[2026-06-09T09:35:35.617066Z] {plugins.py:37} INFO - setup plugin alembic.autogenerate.defaults
+[2026-06-09T09:35:35.617669Z] {plugins.py:37} INFO - setup plugin alembic.autogenerate.comments
+[2026-06-09T09:35:35.724357Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/sdk/_shared/module_loading/__init__.py:61} WARNING - Importing BaseXCom from 'airflow.models.xcom' is deprecated and will be removed in a future version. Please import from 'airflow.sdk.bases.xcom' instead. category=DeprecatedImportWarning
+[2026-06-09T09:35:35.853154Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/cli/cli_config.py:696} WARNING - The web_server_port option in [webserver] has been moved to the port option in [api] - the old setting has been used, but please update your config. category=DeprecationWarning
+[2026-06-09T09:35:35.854169Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/cli/cli_config.py:702} WARNING - The workers option in [webserver] has been moved to the workers option in [api] - the old setting has been used, but please update your config. category=DeprecationWarning
+[2026-06-09T09:35:35.855251Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/cli/cli_config.py:714} WARNING - The web_server_host option in [webserver] has been moved to the host option in [api] - the old setting has been used, but please update your config. category=DeprecationWarning
+[2026-06-09T09:35:35.856675Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/cli/cli_config.py:734} WARNING - The web_server_ssl_cert option in [webserver] has been moved to the ssl_cert option in [api] - the old setting has been used, but please update your config. category=DeprecationWarning
+[2026-06-09T09:35:35.857548Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/cli/cli_config.py:739} WARNING - The web_server_ssl_key option in [webserver] has been moved to the ssl_key option in [api] - the old setting has been used, but please update your config. category=DeprecationWarning
+[2026-06-09T09:35:37.525119Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/models/renderedtifields.py:256} WARNING - The max_num_rendered_ti_fields_per_task option in [core] has been renamed to num_dag_runs_to_retain_rendered_fields - the old setting has been used, but please update your config. category=DeprecationWarning
+  ____________       _____________
+ ____    |__( )_________  __/__  /________      __
+____  /| |_  /__  ___/_  /_ __  /_  __ \_ | /| / /
+___  ___ |  / _  /   _  __/ _  / / /_/ /_ |/ |/ /
+ _/_/  |_/_/  /_/    /_/    /_/  \____/____/|__/
+[2026-06-09T09:35:41.045749Z] {tokens.py:544} WARNING - `api_auth/jwt_secret` was empty, using a generated one for now. Please set this in your config
+[2026-06-09T09:35:41.046459Z] {executor_loader.py:376} INFO - Loaded executor: :LocalExecutor:
+[2026-06-09T09:35:42.238433Z] {core.py:50} INFO - Starting log server on http://[::]:8793
+[2026-06-09T09:35:42.256683Z] {scheduler_job_runner.py:1442} INFO - Starting the scheduler
+[2026-06-09T09:35:42.312405Z] {local_executor.py:80} INFO - Worker starting up pid=22900
+[2026-06-09T09:35:42.340582Z] {local_executor.py:80} INFO - Worker starting up pid=22901
+[2026-06-09T09:35:42.368250Z] {local_executor.py:80} INFO - Worker starting up pid=22902
+[2026-06-09T09:35:42.390453Z] {local_executor.py:80} INFO - Worker starting up pid=22903
+[2026-06-09T09:35:42.397436Z] {/home/shekhar/mlops_ecommerce/venv/lib/python3.13/site-packages/airflow/api_fastapi/auth/tokens.py:540} WARNING - The secret_key option in [webserver] has been moved to the secret_key option in [api] - the old setting has been used, but please update your config. category=DeprecationWarning
+[2026-06-09T09:35:42.399789Z] {config.py:491} WARNING - ASGI app factory detected. Using it, but please consider setting the --factory flag explicitly.
+[2026-06-09T09:35:42.405138Z] {server.py:92} INFO - Started server process [22898]
+[2026-06-09T09:35:42.405839Z] {on.py:48} INFO - Waiting for application startup.
+[2026-06-09T09:35:42.408100Z] {on.py:62} INFO - Application startup complete.
+[2026-06-09T09:35:42.411541Z] {server.py:224} INFO - Uvicorn running on http://:8793 (Press CTRL+C to quit)
+[2026-06-09T09:35:42.414853Z] {local_executor.py:80} INFO - Worker starting up pid=22904
+[2026-06-09T09:35:42.440127Z] {local_executor.py:80} INFO - Worker starting up pid=22909
+[2026-06-09T09:35:42.463107Z] {local_executor.py:80} INFO - Worker starting up pid=22910
+[2026-06-09T09:35:42.486525Z] {local_executor.py:80} INFO - Worker starting up pid=22911
+[2026-06-09T09:35:42.507394Z] {local_executor.py:80} INFO - Worker starting up pid=22912
+[2026-06-09T09:35:42.527991Z] {local_executor.py:80} INFO - Worker starting up pid=22913
+[2026-06-09T09:35:42.547747Z] {local_executor.py:80} INFO - Worker starting up pid=22914
+[2026-06-09T09:35:42.565881Z] {local_executor.py:80} INFO - Worker starting up pid=22915
+[2026-06-09T09:35:42.585743Z] {local_executor.py:80} INFO - Worker starting up pid=22916
+[2026-06-09T09:35:42.606679Z] {local_executor.py:80} INFO - Worker starting up pid=22917
+[2026-06-09T09:35:42.627877Z] {local_executor.py:80} INFO - Worker starting up pid=22918
+[2026-06-09T09:35:42.654121Z] {local_executor.py:80} INFO - Worker starting up pid=22919
+[2026-06-09T09:35:42.679597Z] {local_executor.py:80} INFO - Worker starting up pid=22920
+[2026-06-09T09:35:42.704206Z] {local_executor.py:80} INFO - Worker starting up pid=22921
+[2026-06-09T09:35:42.727785Z] {local_executor.py:80} INFO - Worker starting up pid=22922
+[2026-06-09T09:35:42.748671Z] {local_executor.py:80} INFO - Worker starting up pid=22923
+[2026-06-09T09:35:42.770032Z] {local_executor.py:80} INFO - Worker starting up pid=22924
+[2026-06-09T09:35:42.792465Z] {local_executor.py:80} INFO - Worker starting up pid=22925
+[2026-06-09T09:35:42.813953Z] {local_executor.py:80} INFO - Worker starting up pid=22926
+[2026-06-09T09:35:42.835336Z] {local_executor.py:80} INFO - Worker starting up pid=22927
+[2026-06-09T09:35:42.861913Z] {local_executor.py:80} INFO - Worker starting up pid=22928
+[2026-06-09T09:35:42.893077Z] {local_executor.py:80} INFO - Worker starting up pid=22929
+[2026-06-09T09:35:42.923602Z] {local_executor.py:80} INFO - Worker starting up pid=22930
+[2026-06-09T09:35:42.947574Z] {local_executor.py:80} INFO - Worker starting up pid=22931
+[2026-06-09T09:35:42.975241Z] {local_executor.py:80} INFO - Worker starting up pid=22932
+[2026-06-09T09:35:43.006082Z] {local_executor.py:80} INFO - Worker starting up pid=22934
+[2026-06-09T09:35:43.048309Z] {local_executor.py:80} INFO - Worker starting up pid=22935
+[2026-06-09T09:35:43.058650Z] {scheduler_job_runner.py:2715} INFO - Adopting or resetting orphaned tasks for active dag runs
+[2026-06-09T09:35:43.068037Z] {local_executor.py:80} INFO - Worker starting up pid=22941
+[2026-06-09T09:35:43.089555Z] {scheduler_job_runner.py:2739} INFO - Marked 1 SchedulerJob instances as failed
+[2026-06-09T09:40:43.183680Z] {scheduler_job_runner.py:2715} INFO - Adopting or resetting orphaned tasks for active dag runs
+[2026-06-09T09:45:43.267035Z] {scheduler_job_runner.py:2715} INFO - Adopting or resetting orphaned tasks for active dag runs
+[2026-06-09T09:50:43.332478Z] {scheduler_job_runner.py:2715} INFO - Adopting or resetting orphaned tasks for active dag runs
+[2026-06-09T09:55:43.494495Z] {scheduler_job_runner.py:2715} INFO - Adopting or resetting orphaned tasks for active dag runs
+[2026-06-09T10:00:43.621358Z] {scheduler_job_runner.py:2715} INFO - Adopting or resetting orphaned tasks for active dag runs
+[2026-06-09T10:05:43.267288Z] {base.py:223} INFO - checking for stale bundle versions locally
+[2026-06-09T10:05:43.333860Z] {manager.py:209} INFO - DAG bundles loaded: dags-folder, example_dags
+[2026-06-09T10:05:43.735693Z] {scheduler_job_runner.py:2715} INFO - Adopting or resetting orphaned tasks for active dag runs
+[2026-06-09T10:10:43.856711Z] {scheduler_job_runner.py:2715} INFO - Adopting or resetting orphaned tasks for active dag runs
+[2026-06-09T10:15:43.946904Z] {scheduler_job_runner.py:2715} INFO - Adopting or resetting orphaned tasks for active dag runs
+[2026-06-09T13:46:06.362997Z] {job.py:241} INFO - Heartbeat recovered after 12454.70 seconds
+[2026-06-09T13:48:14.235930Z] {scheduler_job_runner.py:2715} INFO - Adopting or resetting orphaned tasks for active dag runs
+[2026-06-09T13:53:14.312767Z] {scheduler_job_runner.py:2715} INFO - Adopting or resetting orphaned tasks for active dag runs
+[2026-06-09T13:58:14.456713Z] {scheduler_job_runner.py:2715} INFO - Adopting or resetting orphaned tasks for active dag runs
+[2026-06-09T14:01:52.972878Z] {job.py:241} INFO - Heartbeat recovered after 96.72 seconds
+[2026-06-09T14:01:59.191566Z] {job.py:241} INFO - Heartbeat recovered after 57.41 seconds
+[2026-06-09T14:04:23.603362Z] {job.py:241} INFO - Heartbeat recovered after 116.04 seconds
+[2026-06-09T14:04:24.957368Z] {base.py:223} INFO - checking for stale bundle versions locally
+[2026-06-09T14:04:25.097499Z] {manager.py:209} INFO - DAG bundles loaded: dags-folder, example_dags
+[2026-06-09T14:04:25.151834Z] {scheduler_job_runner.py:2715} INFO - Adopting or resetting orphaned tasks for active dag runs
+[2026-06-09T14:04:25.728125Z] {scheduler_job_runner.py:2739} INFO - Marked 1 SchedulerJob instances as failed
+[2026-06-09T14:08:10.818251Z] {job.py:241} INFO - Heartbeat recovered after 227.41 seconds
+[2026-06-09T14:08:27.235308Z] {scheduler_job_runner.py:432} INFO - Exiting gracefully upon receiving signal 15
+[2026-06-09T14:08:27.239559Z] {local_executor.py:305} INFO - Shutting down LocalExecutor; waiting for running tasks to finish.  Signal again if you don't want to wait.
+[2026-06-09T14:08:27.257831Z] {server.py:272} INFO - Shutting down
+[2026-06-09T14:08:27.386537Z] {on.py:67} INFO - Waiting for application shutdown.
+[2026-06-09T14:08:27.414107Z] {on.py:76} INFO - Application shutdown complete.
+[2026-06-09T14:08:27.419424Z] {server.py:102} INFO - Finished server process [22898]
+[2026-06-09T14:08:28.146955Z] {scheduler_job_runner.py:1480} INFO - Exited execute loop

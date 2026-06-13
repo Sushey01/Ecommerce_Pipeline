@@ -4,7 +4,7 @@ services:
     image: redis:7-alpine
     container_name: mlops_redis
     ports:
-      - "6380:6379"
+      - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -15,7 +15,7 @@ services:
     image: mariadb:10.11
     container_name: mlops_mariadb
     ports:
-      - "3310:3306"
+      - "3307:3306"
     environment:
       - MARIADB_ROOT_PASSWORD=root_password
       - MARIADB_DATABASE=mlops_db
@@ -33,7 +33,7 @@ services:
     image: python:3.10-slim
     container_name: mlops_mlflow
     ports:
-      - "5002:5001"
+      - "5001:5001"
     volumes:
       - ./mlruns:/mlflow/mlruns
     working_dir: /mlflow
@@ -46,7 +46,7 @@ services:
       dockerfile: Dockerfile
     container_name: mlops_fastapi
     ports:
-      - "8005:8000"
+      - "8000:8000"
     depends_on:
       redis:
         condition: service_healthy
@@ -64,7 +64,6 @@ services:
       - ./api:/app/api
       - ./src:/app/src
       - ./models:/app/models
-      - ./reports:/app/reports
     working_dir: /app
 
   airflow:
@@ -83,9 +82,9 @@ services:
       - MLFLOW_TRACKING_URI=http://mlflow:5001
       - KAGGLE_USERNAME=shekharlamichhaneMagar
       - KAGGLE_KEY=KGAT_6f55fde860d9fb9720f0d597773474ba
-      - _PIP_ADDITIONAL_REQUIREMENTS=email-validator>=2.0.0 kaggle pandas numpy<2 scikit-learn mlflow redis pymysql cryptography joblib evidently shap matplotlib seaborn protobuf<4.22.0
+      - _PIP_ADDITIONAL_REQUIREMENTS=kaggle pandas "numpy<2" scikit-learn mlflow redis pymysql cryptography joblib evidently shap matplotlib seaborn
     ports:
-      - "8081:8080"
+      - "8080:8080"
     depends_on:
       mariadb:
         condition: service_healthy
@@ -98,7 +97,6 @@ services:
       - ./models:/opt/airflow/models
       - ./mlruns:/opt/airflow/mlruns
       - ./data_ingestion:/opt/airflow/data_ingestion
-      - ./reports:/opt/airflow/reports
     command: standalone
 
 volumes:

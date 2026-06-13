@@ -20,8 +20,8 @@
 - [x] Fixed gunicorn command with proper module path
 - [x] Added worker count for production
 
-### 4. ✅ app/app.py
-- [x] Fixed import statement (`from flask import ...`)
+### 4. ✅ api/app.py
+- [x] Migrated to FastAPI
 - [x] Added environment variable support for Redis
 - [x] Added `/health` endpoint
 - [x] Added error handling
@@ -35,7 +35,7 @@
 - [x] Fixed subprocess usage
 
 ### 6. ✅ Created .env file
-- [x] Flask configuration
+- [x] FastAPI configuration
 - [x] Redis configuration
 - [x] Airflow configuration
 
@@ -55,26 +55,25 @@
 
 ```bash
 # ✅ All Python files validated
-python -m py_compile app/app.py app/train.py airflow/dags/pipeline.py
+python -m py_compile api/app.py src/train_model.py dags/ecommerce_pipeline.py
 
 # ✅ Model training tested
-python app/train.py
-```
+python src/train_model.py
 
 ## Ready to Deploy
 
 ### Local Testing
 ```bash
 pip install -r requirements.txt
-python app/train.py
-python -m flask run --app app/app.py
+python src/train_model.py
+python -m uvicorn api.app:app --host 0.0.0.0 --port 8000
 ```
 
 ### Docker Deployment
 ```bash
 docker compose up -d
 # Services will be available at:
-# - Flask API: http://localhost:5000
+# - FastAPI API: http://localhost:8000
 # - Airflow: http://localhost:8080
 # - Redis: localhost:6379
 ```
@@ -82,7 +81,7 @@ docker compose up -d
 ## Next Steps
 
 1. Install dependencies: `pip install -r requirements.txt`
-2. Test Flask app locally: `python -m flask run --app app/app.py`
+2. Test FastAPI app locally: `python -m uvicorn api.app:app --host 0.0.0.0 --port 8000`
 3. Deploy with Docker: `docker compose up -d`
-4. Test API endpoint: `curl -X POST http://localhost:5000/predict -H "Content-Type: application/json" -d '{"exp": 5}'`
+4. Test API endpoint: `curl -X POST http://localhost:8000/predict -H "Content-Type: application/json" -d '{"age": 30, "time_on_site": 120.0, "gender": "Female", "device_type": "Mobile", "pages_viewed": 5, "previous_purchases": 2, "cart_items": 1, "discount_seen": 1, "returning_user": 1, "avg_session_time": 15.0, "bounce_rate": 0.2, "purchase": 0}'`
 5. Monitor Airflow DAGs: Visit `http://localhost:8080`
