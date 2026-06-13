@@ -1,4 +1,4 @@
-# MLOps E-Commerce Ad Click Prediction Pipeline
+# MLOps E-Commerce Pipeline
 
 A production-grade, containerized MLOps pipeline for data ingestion, preprocessing (ELT), hyperparameter tuning, model training, evaluation, and monitoring of an e-commerce ad click prediction model.
 
@@ -151,11 +151,38 @@ mlops-ecommerce/
 
 ### Inspecting Container Logs
 ```bash
-docker compose logs web       # API server logs
-docker compose logs airflow   # Airflow orchestration logs
-docker compose logs mariadb   # Database logs
+# Check if Redis is running
+docker compose logs redis
+
+# Restart Redis
+docker compose restart redis
 ```
 
-### Re-triggering Airflow Tasks
-1. Log into the Airflow UI at `http://localhost:8081` (username/password found in your standalone config or docker-compose environment).
-2. Unpause the `ecommerce_ml_pipeline` or `mlops_monitoring` DAG and trigger it manually.
+### Airflow Issues
+```bash
+# View Airflow logs
+docker compose logs airflow
+
+# Reinitialize Airflow
+docker compose exec airflow airflow db init
+```
+
+### Model Training Failed
+```bash
+# Retrain model locally
+python app/train.py
+```
+
+## Development
+
+### Adding New Dependencies
+1. Update `requirements.txt`
+2. Rebuild Docker image: `docker compose build`
+3. Restart services: `docker compose up -d`
+
+### Modifying the Model
+Edit `app/train.py` and run locally or trigger Airflow DAG.
+
+## License
+
+MIT
