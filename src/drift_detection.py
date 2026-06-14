@@ -35,32 +35,91 @@ REPORTS_DIR.mkdir(exist_ok=True)
 
 
 def generate_drift_report():
-    """Generate a drift detection report comparing reference and current data using Evidently AI"""
+    """Generate a drift detection report comparing baseline training data and live traffic using Evidently AI"""
     print("📈 Generating Drift Report...")
 
-    # Load data
+    # Load baseline processed data
     try:
         df = read_from_db("SELECT * FROM processed_ecommerce_data")
     except Exception as e:
-        print(f"❌ DB error: {e}")
+        print(f"❌ DB error reading processed baseline data: {e}")
         return
 
-    reference_data, current_data = train_test_split(df, test_size=0.3, random_state=42)
+    # Extract reference data (80% training split)
+    target_col = 'ad_clicked'
+    from sklearn.model_selection import train_test_split
+    reference_data, val_data = train_test_split(df, test_size=0.2, random_state=42, stratify=df[target_col])
 
     # Load model
-    model_path = MODELS_DIR / "random_forest_model.pkl"
+    model_path = MODELS_DIR / "best_model.pkl"
     if not model_path.exists():
-        print("❌ Model not found")
+        print(f"❌ Model not found at {model_path}")
         return
 
     model = joblib.load(model_path)
 
+    # Load live traffic from prediction logs
+    try:
+        current_raw = read_from_db("SELECT * FROM prediction_logs")
+    except Exception as e:
+        print(f"⚠️ prediction_logs table not available or empty. Error: {e}")
+        current_raw = pd.DataFrame()
+
+    # If prediction logs are non-empty and have sufficient data (e.g. >= 10 rows), process them
+    if not current_raw.empty and len(current_raw) >= 10:
+        print(f"📊 Processing {len(current_raw)} live prediction logs for drift comparison...")
+        try:
+            # Clean columns
+            current_raw['gender'] = current_raw['gender'].fillna('Unknown')
+            current_raw['device_type'] = current_raw['device_type'].fillna('Unknown')
+            
+            # Feature engineering
+            current_raw['engagement_score'] = (current_raw['pages_viewed'] * current_raw['time_on_site']) / (current_raw['cart_items'] + 1)
+            current_raw['age_discount_interaction'] = current_raw['age'] * current_raw['discount_seen']
+            
+            # Load preprocessors
+            scaler = joblib.load(MODELS_DIR / 'scaler.pkl')
+            ohe = joblib.load(MODELS_DIR / 'one_hot_encoder.pkl')
+            
+            # Scale numericals
+            num_cols = ['age', 'time_on_site', 'pages_viewed', 'previous_purchases', 'cart_items']
+            scaled_nums = scaler.transform(current_raw[num_cols])
+            df_scaled = pd.DataFrame(scaled_nums, columns=num_cols, index=current_raw.index)
+            
+            # OHE categoricals
+            cat_cols = ['gender', 'device_type']
+            ohe_cats = ohe.transform(current_raw[cat_cols])
+            ohe_feature_names = [f"{col}_{cat}" for col, cats in zip(cat_cols, ohe.categories_) for cat in cats]
+            df_ohe = pd.DataFrame(ohe_cats, columns=ohe_feature_names, index=current_raw.index)
+            
+            # Combine
+            other_cols = ['discount_seen', 'engagement_score', 'age_discount_interaction']
+            current_data = pd.concat([
+                df_scaled,
+                df_ohe,
+                current_raw[other_cols].reset_index(drop=True).set_index(current_raw.index)
+            ], axis=1)
+            
+            # Add target placeholder and make predictions
+            current_data['ad_clicked'] = 0  # placeholder
+            
+        except Exception as e:
+            print(f"⚠️ Failed to preprocess live prediction logs: {e}. Falling back to validation split.")
+            current_data = val_data.copy()
+    else:
+        print("⚠️ Not enough live prediction logs. Falling back to the validation split of historical data.")
+        current_data = val_data.copy()
+
+    # Drop metadata columns from both datasets
+    meta_cols = ['pipeline_run_id', 'ingestion_ts', 'prediction_timestamp']
+    reference_data = reference_data.drop(columns=[c for c in meta_cols if c in reference_data.columns])
+    current_data = current_data.drop(columns=[c for c in meta_cols if c in current_data.columns])
+
     # Add predictions
-    X_ref = reference_data.drop("ad_clicked", axis=1)
-    X_curr = current_data.drop("ad_clicked", axis=1)
+    feature_cols = [col for col in reference_data.columns if col not in ["ad_clicked", "prediction"]]
     
-    reference_data["prediction"] = model.predict(X_ref)
-    current_data["prediction"] = model.predict(X_curr)
+    reference_data["prediction"] = model.predict(reference_data[feature_cols])
+    current_data["prediction"] = model.predict(current_data[feature_cols])
 
     # Run Evidently Report
     if Report is not None and DataDriftPreset is not None:
@@ -133,7 +192,7 @@ def generate_drift_report():
         
         status = "⚠️ DRIFT" if is_drift else "✓ OK"
         print(f"{col:20} | Ref Mean: {ref_mean:8.2f} | Curr Mean: {curr_mean:8.2f} | {status}")
-
+    
     # Generate basic HTML report fallback
     html_content = _generate_html_report(drift_summary, reference_data, current_data)
     
@@ -143,6 +202,7 @@ def generate_drift_report():
     
     print(f"\n✅ Basic fallback drift report saved: {report_path}")
     return drift_summary
+
 
 
 

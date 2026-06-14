@@ -3,7 +3,7 @@ FastAPI application
 Serves predictions via REST API using modular components
 """
 
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, BackgroundTasks
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from typing import Union, List
@@ -129,8 +129,27 @@ def get_drift_report():
         )
 
 
+def log_prediction_requests_bg(request_data: Union[PredictionRequest, List[PredictionRequest]]):
+    """Log prediction requests to prediction_logs table in MariaDB in the background"""
+    try:
+        from database import write_to_db
+        import pandas as pd
+        from datetime import datetime
+        
+        if isinstance(request_data, list):
+            records = [item.dict() for item in request_data]
+        else:
+            records = [request_data.dict()]
+            
+        df = pd.DataFrame(records)
+        df['prediction_timestamp'] = datetime.now()
+        
+        write_to_db(df, 'prediction_logs', if_exists='append')
+    except Exception as e:
+        print(f"Warning: Failed to log prediction requests to DB: {e}")
+
 @app.post("/predict", response_model=Union[PredictionResponse, List[PredictionResponse]], status_code=status.HTTP_200_OK)
-def predict(request_data: Union[PredictionRequest, List[PredictionRequest]]):
+def predict(request_data: Union[PredictionRequest, List[PredictionRequest]], background_tasks: BackgroundTasks):
     """
     Predict if the user will click on an ad
     Supports either a single user object or a list of user objects.
@@ -138,7 +157,7 @@ def predict(request_data: Union[PredictionRequest, List[PredictionRequest]]):
     **Features Description (Variables metadata):**
     * **age** (metrical): float number representing user age
     * **gender** (nominal): Female, Male, Unknown
-    * **device_type** (nominal): Desktop, Mobile, Tablet, Unknown
+    * **device_type** (nominal): Device type (Desktop, Mobile, Tablet, Unknown)
     * **time_on_site** (metrical): float number of minutes spent on site
     * **pages_viewed** (metrical): float number of unique pages viewed
     * **previous_purchases** (metrical): float number of historical purchases
@@ -149,6 +168,9 @@ def predict(request_data: Union[PredictionRequest, List[PredictionRequest]]):
     * **bounce_rate** (metrical): bounce rate percentage value
     * **purchase** (nominal): 1.0 = Session ended in a store purchase, 0.0 = No purchase
     """
+    # Enqueue background logging task
+    background_tasks.add_task(log_prediction_requests_bg, request_data)
+
     if isinstance(request_data, list):
         results = []
         for item in request_data:
