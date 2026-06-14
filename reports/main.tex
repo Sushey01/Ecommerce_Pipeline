@@ -44,7 +44,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\small CMP6230 Data Management and MLOps}
-\fancyhead[R]{\small E-Commerce Behavior Pipeline}
+\fancyhead[R]{\includegraphics[height=22pt]{figures/logo.png}}
 \fancyfoot[C]{\thepage}
 
 % ══════════════════════════════════════════════════════════════════
@@ -75,7 +75,7 @@
     \textbf{Module Coordinator:}& Rupak Koirala \\[4pt]
     \textbf{Submission Date:}   & 17th May 2026 \\[4pt]
     \textbf{Email:}             & shekhar\_23189647@sunway.edu.np \\[4pt]
-    \textbf{Word Count:}        & $\approx$4{,}300 \\
+    \textbf{Word Count:}        & $\approx$4{,}000 \\
   \end{tabular}
 
 \end{center}
@@ -85,8 +85,9 @@
 
 % ── Abstract ──────────────────────────────────────────────────────
 \begin{abstract}
-This report presents the design and implementation of a five-stage MLOps pipeline built for CMP6230 (Data Management and ML Operations). 
-The \textbf{E-Commerce Behavior Dataset} (8,000 users) that had been evaluated against practical and technical criteria with the two other Kaggledatasets was chosen for a binary classification task: predicting whether a user clicks on an advertisement during a browsing session. The pipeline consists of data ingestion with schema validation, ELT preprocessing and feature engineering (transformations applied after loading), three-algorithm model comparison with 5-fold cross-validation, REST API deployment via FastAPI and Docker, and data drift monitoring with Evidently AI. All stages are orchestrated by an Apache Airflow DAG and linked through a Redis in-memory data bus. The storage system is designed on the basis of a \textbf{One Big Table (OBT)} design on MariaDB ColumnStore. Random Forest classifier got the highest ROC-AUC score (0. 51), Yet the three models ended up with almost random performance levels this being due to the synthetic nature of the dataset rather than limitations of the pipeline itself. GDPR compliance and security considerations have also been discussed.
+
+This report outlines the design and implementation of a five stage MLOps pipeline for the purpose of CMP6230 (Data Management and ML Operations). 
+The \textbf{E-Commerce Behavior Dataset} (8000 users) that had been tested on practical and technical aspects against the two other Kaggledatasets was selected for the binary classification problem: whether a user will click on an advertisement in a browsing session or not. This pipeline includes data ingestion with schema validation, ELT preprocessing and feature engineering (transformations after data is loaded), 3-algorithm model comparison with 5-fold cross validation, deployment on REST API using FastAPI and Docker, and monitoring data drift using Evidently AI. All stages are orchestrated by an Apache Airflow DAG and connected via an in-memory data bus called Redis. The storage system is designed on the basis of a \textbf{One Big Table (OBT)} design on MariaDB ColumnStore. Random Forest classifier got the highest ROC-AUC score (0. 51), Yet the three models ended up with almost random performance levels this being due to the synthetic nature of the dataset rather than limitations of the pipeline itself. Compliance with GDPR and security concerns have also been mentioned.
 \end{abstract}
 
 \newpage
@@ -121,9 +122,7 @@ predict whether the user clicked on an advertisement (\texttt{ad\_clicked} = 1) 
 
 \subsection{Candidate Dataset Evaluation}
 
-Three candidate datasets were evaluated before selection, each assessed on target
-variable clarity, feature diversity, size, and suitability for a real-world CTR
-classification problem. Table~\ref{tab:candidates} summarises the comparison.
+Before selection, three candidate datasets were evaluated, for the clarity of the target variable, feature diversity, size and suitability for a real-world CTR classification problem. The comparison is summarized in Table~\ref{tab:candidates}.
 
 \begin{table}[H]
 \centering
@@ -151,23 +150,25 @@ US Tariff \& Trade War Dataset \cite{belbino2024}
 \end{table}
 
 
-The E-Commerce Behavior Dataset was selected mainly because those predictions of click-through rate have unfortunately a direct and measurable business value as a
-good enough model can be used to find the users with the most likely engagement, Because of this helping to increase the advertising expenditures return by a considerable amount. On the
-other hand, the dataset consists of pre-labelled binary target, almost balanced classes, and an array of demographic, behavioural, and transactional features, which all together
-provide a very proper setting for a supervised classification pipeline.
+E-commerce Behavior Dataset is chosen as the primary source of data due to the following reasons: first, the predictions concerning click-through rate are obviously of practical significance and 
+this will provide a significant increase in the profitability of advertisement campaigns due to the possibility of identifying the most interested users.
+Moreover, the dataset possesses almost equal class distribution, a relatively large number of behavioral and demographic attributes, as well as pre-classified examples,
+which will provide excellent grounds for successful supervised learning.
+
+
 
 \subsection{Dataset Characteristics and Logical Structure}
 
-The E-Commerce Behavior Dataset \cite{asifxzaman2024} contains session-level behavioral records
-of 8,000 e-commerce users made publicly available on Kaggle. The dataset represents
-realistic digital retail interactions at the session level by integrating user demographics
-(age, gender), session activities (time on site, pages viewed, device type), transactional
-context (previous purchases, items in cart), promotional exposure (discount seen), and
-a binary ad interaction outcome \texttt{ad\_clicked}).
 
-The file is a single flat CSV with 10 columns and 8,000 rows (approximately 300 kB).
-Figure~\ref{fig:erd} shows the logical structure of the original data as an entity diagram.
-There are no foreign-key relationships - all columns belong to one entity.
+The E-Commerce Behavioral Dataset \cite{asifxzaman2024} is a collection of behavioral data from sessions. E-Commerce Behavior Dataset provides session-level behavioral data.
+The 8,000 ecommerce users that were made public in Kaggle. The dataset represents the user demographics are integrated into the session level and realistic digital retail interactions are achieved.
+(age, gender), transactional (time on site, pages viewed, device type), and session activities (time on site, pages viewed, device type).
+The social media information that's visible to both others and them (prior purchases, cart items, discount visibility).
+The outcome of an ad interaction is a binary variable (\texttt{ad\_clicked}).
+
+The file is a single, flat CSV file with 10 columns and 8,000 rows (about 300 kB).
+The logical structure of the original data is depicted in Figure~\ref{fig:erd} in the form of entity diagram.
+No one-to-one or many-to-many relationships - all columns are in one entity.
 
 \begin{figure}[H]
   \centering
@@ -252,27 +253,27 @@ SELECT age, gender_Male, time_on_site, pages_viewed,
 FROM user_session_obt;
 \end{verbatim}
 
-A Star Schema would require a multi-table JOIN every time --- more code, slower 
-execution, and no benefit for this single-source dataset.
+A Star Schema would require a multi-table JOIN every time - more code,  
+execution takes more time, and no benefit for this single-source dataset.
+
 
 \subsubsection*{The Data Is Already Flat}
 
-This dataset isn't relational. Each row is one complete user session with all its 
-attributes. Normalising it into multiple tables would mean taking something simple 
-and making it complicated, then joining it all back together for every query.
+This dataset is not relational. Each row represents a whole user session and all its 
+attributes. Normalising it into multiple tables would be like taking something simple.
+Adding to that, and making it complicated, would be to then put it all back together for each query.
 
 \subsubsection*{ColumnStore Actually Prefers OBT}
 
-MariaDB ColumnStore is a columnar database. With OBT, a query reads only the columns 
-requested from disk. With a Star Schema, JOINs force row re-materialisation, losing 
-the columnar advantage. For a pipeline that repeatedly scans all 8,000 rows, that 
-performance difference adds up.
+MariaDB ColumnStore is a columnar database. When using OBT, only the columns are read and requested from disk. JOINs cause row re-materialisation and lose data with a Star Schema. 
+the columnar advantage. For a pipeline that is going to repeat it's SQL scan of all 8,000 rows, 
+The cumulative effect of performance difference is always possible.
 
 \subsubsection*{Storage Overhead Is Tiny}
 
-OBT has some redundancy, but 8,000 rows × 15 columns is only ~300KB uncompressed 
-(under 100KB compressed). The hours saved by not implementing a Star Schema went 
-directly into feature engineering instead.
+There is some redundancy in OBT, but 8,000 rows x 15 columns is ~300KB uncompressed. 
+(under 100KB compressed). The time saved in not having to implement a Star Schema went to 
+Rather, they should go straight to feature engineering.
 
 
 \begin{table}[H]
@@ -359,39 +360,36 @@ ingestion\_ts        & DATETIME     & When the row was loaded \\
 
 \subsubsection*{Why ELT Over ETL For This Project}
 
-The main reason why ELT was selected over ETL was data preservation and reproducibility. 
-With ELT, raw data is loaded into MariaDB ColumnStore first, before any transformations 
-are applied. This means the original Kaggle CSV is preserved exactly as downloaded, 
-creating an immutable source of truth.
+The main reason for choosing ELT over ETL was data preservation and reproducibility.
+In ELT, raw data is loaded into MariaDB ColumnStore first, and then transformed. 
+are applied. This will ensure that the original Kaggle CSV is downloaded in exactly the same format, 
+generating the immutable source of truth.
 
-Complex stateful operations like one-hot encoding, StandardScaler, feature engineering, 
-and stratified splitting are still performed in Python, but they happen after the data 
-is already safely stored in the database. This approach has three advantages:
+Complex stateful operations such as one-hot encoding, StandardScaler, feature engineering, etc. 
+and stratified splitting are still done in Python, although they occur after the data. 
+is already safely stored in the database. There are three benefits to this:
 
 \begin{enumerate}[leftmargin=*, itemsep=2pt]
-  \item \textbf{Auditability:} The raw data never changes. If a bug is discovered in 
-    preprocessing, the code can be fixed and re-run on the original stored data 
-    without re-downloading from Kaggle.
+  \item \textbf{Auditability:} The raw data cannot be changed. If a bug is found in the pre-processing, the code can be fixed and run again on the original stored data without downloading it again from Kaggle.
   
-  \item \textbf{Reproducibility:} Every experiment starts from the exact same raw 
-    data. Different preprocessing strategies can be compared fairly.
+  \item \textbf{Reproducibility:} Every experiment begins with the exact same raw data. Different preprocessing strategies can be compared fairly.
   
-  \item \textbf{Separation of concerns:} Ingestion only loads data. Preprocessing 
+  \item \textbf{Separation of concerns:} Ingestion loads the data. Preprocessing 
     only transforms it. Neither step interferes with the other.
 \end{enumerate}
 
-For multi-terabyte or streaming sources, ELT is also the industry standard pattern 
-used by BigQuery, Snowflake, and Redshift. Adopting ELT here builds habits that 
-transfer to production environments.
+ELT is also the standard pattern used in the industry for multi terabyte or streaming sources.
+Via BigQuery, Snowflake, Redshift. The use of ELT here creates habits which transfer to
+production environments.
 
 \subsubsection*{The Data Is Already Clean}
 
-Synthetic datasets are usually pretty clean, and this one is no exception. Missing
-values account for only about 2\% across the whole dataset, spread out randomly with
-nothing structural --- median imputation handles it fine. There is no corrupt data, no
-malformed rows, no inconsistent date formats. Categorical columns like \texttt{gender}
-and \texttt{device\_type} are already standardised with no typos or capitalisation
-issues. The target is pre-labelled as 0 or 1 with no ambiguity.
+Synthetic datasets are typically very clean and this is no exception. Missing
+Across the entire data set, values are about 2% and are scattered randomly,
+Nothing structural - Median imputation is ok. There's no bad data, no
+No inconsistent date formats, malformed rows. Categorical columns like \texttt{gender}
+and \texttt{device\_type} is standardised as is; there are no typos or capitalisations
+issues. Target is unambiguously labelled 0 or 1.
 
 Because the data barely needs cleaning before it is usable, running heavy preprocessing
 before loading felt like overkill. ELT lets me store the raw data first and apply
@@ -414,18 +412,14 @@ only the transform step needs to be re-run.
 
 \subsection{Overall Pipeline Architecture}
 
-Figure~\ref{fig:pipeline} shows the full pipeline from data source through to the
-prediction API and monitoring dashboard. The pipeline comprises five logical stages,
-each mapped to a dedicated Python module.
+The entire pipeline from data source to the prediction API and the monitoring dashboard is shown in Figure~\ref{fig:pipeline}. The pipeline consists of 5 logical stages, each implemented as a separate Python module.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.95\textwidth]{figures/ecommerce_mermaid_pipelinevertical.png}
-  \caption{End-to-end MLOps pipeline: CSV source $\rightarrow$ MariaDB ColumnStore
-(ELT load), Airflow orchestrates the **five-stage DAG (ingest $\rightarrow$ preprocess 
-$\rightarrow$ tune $\rightarrow$ train $\rightarrow$ evaluate)**, Redis carries data between steps, 
-MLflow tracks experiments, FastAPI serves predictions, and Evidently AI runs 
-continuous drift monitoring across the full system lifecycle.}
+  \includegraphics[width=0.95\textwidth]{figures/Ecommerce_Pipeline.png}
+  \caption{Complete MLOps pipeline from the CSV source to MariaDB ColumnStore (ELT load)
+First, Airflow organizes a five-stage DAG (ingest $\rightarrow$ preprocess $\rightarrow$ tune $\rightarrow$ train $\rightarrow$ evaluate). Then, Redis transfers data among the steps.
+MLflow keeps a record of the experiments. FastAPI makes the predictions available, and Evidently AI performs ongoing drift monitoring of the entire system lifecycle.}
   \label{fig:pipeline}
 \end{figure}
 
@@ -492,35 +486,35 @@ checkpoint that validates three schema rules: (1) \texttt{user\_id} field is uni
 inclusive. Each row failing a check is quarantined instead of removed. The rows passing validation
 are inserted in one go into the OLTP MariaDB staging table \texttt{raw\_user\_sessions}.
 The raw DataFrame is simultaneously serialised into Redis. The \texttt{pipeline\_run\_id}
-and \texttt{ingestion\_ts} fields added at this stage provide a full audit trail.
+and \texttt{ingestion\_ts} introduced at this step give the whole historical record.
 
-\textbf{Who:} A Data Engineer is responsible for configuring database connections, validating
-row counts after ingestion, and maintaining the Docker Compose infrastructure. Data
-Scientists access stored data through Redis or direct MariaDB queries.
+\textbf{Who:} A Data Engineer is the one who sets up the database connections, checks the row counts after ingestion for accuracy, and keeps the Docker Compose infrastructure running.
+Data Scientists get their hands on the stored data either via Redis or by making direct MariaDB queries. 
 
 \subsection{Data Preprocessing}
 
-\textbf{What:} The preprocessing module (\texttt{src/preprocessing.py}) first removes unnecessary parts from raw data. Then it encodes categorical variables, scales numeric features, engineers new
-features, and finally makes stratified train/test splits.
+\textbf{What:} Initially, the preprocessing module (\texttt{src/preprocessing. py}) cleans the raw data by removing the extraneous parts.
+After that, it transforms categorical variables into numerical format, normalizes numerical features, creates new features and, in the end, performs stratified train/test splits. 
 
-\textbf{Why:} Classifiers cannot directly consume raw data. Categorical columns have to be encoded, and numeric features with varying scales would bias distance-based algorithms if a proper scaling were not used.
-Also, a stratified split ensures that the binary target maintains the same class ratio in both training and testing sets, which is necessary for unbiased evaluation \cite{pedregosa2011}.
+\textbf{Why:} A classifier is not capable of directly consuming raw data. Categorical columns need to be encoded, and numeric features within different scales would bias distance-based algorithms if an adequate scaling was not used. Also, a stratified split guarantees that the binary target maintains the
+same proportion of classes in both training and testing, which is a prerequisite for unbiased evaluation \cite{pedregosa2011}. 
 
 \textbf{How:} The following transforms are applied in order:
 
 \begin{enumerate}[leftmargin=*, label=\arabic*., itemsep=2pt]
-  \item Drop the non-feature identifier \texttt{user\_id}.
-  \item Impute any missing numeric values with the column median.
-  \item One-hot encode \texttt{gender} and \texttt{device\_type} (nominal; no ordinal relationship).
-  \item Apply \texttt{StandardScaler} to \texttt{age}, \texttt{time\_on\_site}, \texttt{pages\_viewed},
-    \texttt{previous\_purchases}, \texttt{cart\_items}. StandardScaler has been selected instead of MinMaxScaler because the feature distributions are not bounded.
-MinMaxScaler would have compressed the outliers in the range floor and StandardScaler would have remained unaffected.
+  \item Remove the user id non-feature \texttt{user\_id}.
+  \item Fill the gap with the numeric values using the median.
+  \item One-hot encode \texttt{gender} and \texttt{device\_type} as they are nominal with no ordinal relationship. 
+  \item Use \texttt{StandardScaler} on \texttt{age}, \texttt{time\_on\_site}, \texttt{pages\_viewed},
+    \texttt{previous\_purchases}, \texttt{cart\_items}. StandardScaler was chosen over MinMaxScaler since the features
+are not bounded. MinMaxScaler would have scaled the outliers into the
+range floor whereas StandardScaler would have left them unchanged. 
   \item Derive the composite feature:
     \begin{equation}
       \texttt{engagement\_score} = \frac{\texttt{pages\_viewed} \times \texttt{time\_on\_site}}{\texttt{cart\_items} + 1}
     \end{equation}
     This captures browsing intensity relative to cart state, acting as a proxy for purchase intent.
-  \item Apply interaction term between \texttt{age} and \texttt{discount\_seen}, capturing
+  \item Use interaction term between \texttt{age} and \texttt{discount\_seen}, to verify
     whether younger users respond differently to promotional banners.
   \item Apply a stratified 80/20 train/test split with fixed random seed (42) for reproducibility \cite{sklearn2018}.
 \end{enumerate}
@@ -633,6 +627,13 @@ scikit-learn object, while the evaluation part supplements the test-set metrics 
 importances) to the very same MLflow run. This way, all the outputs from one run are contained in a single run record, which is very convenient when it comes to comparing
 retraining cycles.
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/mlflow_metrics_comparison.png}
+  \caption{MLflow experiment tracking showing model metrics comparison across multiple runs.}
+  \label{fig:mlflow_metrics}
+\end{figure}
+
 
 \subsection{Reproducibility}
 
@@ -679,9 +680,9 @@ In Figure~\ref{fig:missing} it is indicated that each column has roughly 2\% mis
 These low, consistent missingness levels are evenly distributed between both classes and are in line with a Missing Completely At Random (MCAR)
 mechanism \cite{rubin1976}, which supports the use of median imputation rather than dropping the columns.
 
-\textbf{RQ3 - Contextual feature signal.} Figure~\ref{fig:categorical} shows that both
-\texttt{gender} and \texttt{device\_type}  is almost identical and about 50/50 in all categories. In fact, in genuine e-commerce datasets, it's a recognized fact that mobile users as well as younger generations tend to exhibit quite different click-through-rate patterns \cite{richardson2007}. The 
-feature \texttt{discount\_seen} hardly gives any class-conditional signal.
+\textbf{RQ3 - Contextual feature signal.} Figure~\ref{fig:categorical} presents that the distributions of both
+\texttt{gender} and \texttt{device\_type} are nearly the same and approximately evenly split in all categories. Actually, among real e-commerce datasets it is a known fact that mobile users as well as the younger generations tend to reveal very different click-through-rate patterns \cite{richardson2007}. The
+feature \texttt{discount\_seen} almost does not provide any conditional class signal. 
 
 \begin{figure}[H]
   \centering
@@ -863,19 +864,17 @@ The following definitions, grounded in the literature, underpin the discussion o
 Examples include encryption, access controls, and network security.
 
 \textbf{Data Ethics} refers to the moral responsibilities that arise from collecting and using
-data about people. For ML systems, the main issues are biases in algorithms, the opacity of models, and the danger of data-driven decisions that might worsen or spread social inequalities \cite{sculley2015}.
+data about people. Machine Learning (ML) systems face the significant challenge of algorithmic bias, model opacity, and the risk of data-driven decisions leading to further or wider distribution of social inequalities \cite{sculley2015}. 
 
-\textbf{Data Protection Law} refers to the laws and regulations governing how organisations
-handle personal data. In the UK and EU, the primary legislation is the General Data
-Protection Regulation (GDPR) \cite{gdpr2016}.
+\textbf{Data Protection Law} is a set of rules and regulations that defines how organisations should manage an individual's personal data. In the UK and EU, the most important law is the General Data Protection Regulation (GDPR) \cite{gdpr2016}.
 
 \subsection{GDPR and Its Impact on Data-Driven Systems}
 
-The General Data Protection Regulation (GDPR) \cite{gdpr2016}, which came into force in May 2018, radically altered the manner in which organizations handle personal data.
-Its six fundamental principles demand that data be processed lawfully, transparently, and only for specified purposes, together with data minimization accuracy limited retention, and appropriate security measures.
+The aim of the General Data Protection Regulation (GDPR) \cite{gdpr2016}, which was enacted in May 2018, was to change the whole approach of organizations in handling personal data. 
+There are six core principles that require data to be: processed lawfully, transparently, and only for the stated purposes user; together with data minimization the accuracy storage limitation, and appropriate security. 
 
-When it comes to ML pipelines, the GDPR raises several new issues. That is because organizations must be able to explain automated decisions that have an impact on individuals, a requirement that is not consistent with black-box models like Random Forest and XGBoost.
-Also, individuals have the right to request the deletion of their data, so a question naturally arises as to how to get rid of a person's data from a model that has already been trained without resorting to full retraining. The large fines imposed at high-profile cases - 50 million against Google and 183 million against British Airways - demonstrate that regulators enforce these requirements strictly.
+Machine learning models and GDPR interaction introduce a number of new concerns. It is because the organizations will be required by law to explain automated decisions that influence individuals whereas the black-box models like Random Forest and XGBoost are inherently non-explanatory.
+On top of that, users have the option to demand removal of their data so the issue naturally arises how can you delete someone from the training data model without going through the process of full re-training. The colossal fines that came out in the well-known cases - 50 million against Google and 183 million against British Airways - show that the regulators take these rules very seriously. 
 
 
 \subsection{Security and Privacy in the Current Pipeline}
@@ -897,11 +896,11 @@ stop unauthorised prediction requests.
 \textbf{Model artefacts.} The serialised \texttt{.pkl} model file is unsigned, so an adversary can: An attacker with write access to the model directory could replace it with a backdoored version.
 Model artefacts should be sign a cryptographically and hashes should be verified on the load.
 
-Ethically a deployed CTR prediction model has to be responsible for more than just legal compliance. If a model is trained to target advertisements
-based on demographic features like age or gender, the model may be indirectly promoting unequal treatment of protected groups without even realizing it.
-A production deployment of this pipeline should consider performing fairness audits on a regular basis -
-checking the model performance within different demographic subgroups - as a
-standard element of the monitoring phase \cite{sculley2015}.
+Deployed CTR prediction model ethically have to be responsible for more than just legal compliance. If a model aims at targeting advertisements based on demographic features like age or gender,
+the model may be indirectly discriminating against protected groups even without awareness. Fairness audits of a model - checking how well a model performs within different demographic subgroups -
+should become a regular practice of a production deployment of the pipeline as part of the monitoring step taken for ensuring the model remains fair \cite{sculley2015}. 
+
+
 
 
 \begin{table}[H]
@@ -951,17 +950,16 @@ Choosing ELT over ETL and OBT over Star Schema early on turned out to be decisio
 I never had to second-guess. Because the raw CSV was loaded into MariaDB ColumnStore 
 first and transformations happened downstream in \texttt{preprocessing.py}, fixing a 
 preprocessing bug was as simple as re-running one script - no re-download, no data 
-loss. And because every ML query hit a single flat OBT table with no joins, debugging 
-feature engineering issues was straightforward.
+loss. And since every ML request targeted one and the same single flat OBT table without any join, debugging feature engineering issues was fairly simple. 
 
-Using RandomizedSearchCV instead of GridSearchCV was a hands-on efficiency lesson. Grid search was going to take forever for the three algorithms. RandomizedSearchCV greatly reduced the time without Much losing the quality of results. 
+RandomizedSearchCV vs. GridSearchCV was a practical efficiency lesson.
+With GridSearchCV, the grid search was going to take forever for the three algorithms. RandomizedSearchCV Quite a bit shortened the time without greatly compromising the quality of results. 
 
-The major thing I would do differently is to make the monitoring phase a top-level design issue from the very beginning rather than be something tacked on at the end. Reading about hidden technical debt in ML systems \cite{sculley2015} made me realize that a model with no post-deployment monitoring is not properly in production - it is merely a trained artefact sitting on a server. Launching Evidently AI drift detection features during the pipeline architecture development phase would have made the monitoring phase less like an afterthought and more like a fundamental part of the system.
+The main thing I would change is making the monitoring phase a top-level design issue right from the start rather than something added at the end. After reading about hidden technical debt in ML systems, \cite{sculley2015} I realized that a model without post-deployment monitoring is not truly in production - it is just a trained artefact sitting on a server. If we had started using Evidently AI drift detection features when designing the pipeline architecture, the monitoring phase would have been less like an afterthought and more like an integral part of the system. 
 
 \subsection{Conclusion}
 
-This project planned and implemented a five-stage MLOps pipeline for binary
-classification on the E-Commerce Behavior Dataset. The pipeline starts data ingestion with schema validation, moves forward to ELT preprocessing plus feature engineering, then goes to three-algorithm model comparison carrying out 5-fold cross-validation, deploys REST API using FastAPI and Docker, and finally data drift monitoring is done with Evidently AI. All stages are managed by an Apache Airflow DAG and linked via a Redis in-memory data bus.
+This project designed and implemented a five-stage MLOps pipeline for binary classification using the E-Commerce Behavior Dataset. First, the pipeline does data ingestion with schema validation; next, it performs ELT processing plus feature engineering; after that, it goes to model comparison of three algorithms which is followed by 5-fold cross-validation; the fourth step is deployment of REST API by FastAPI and Docker; and the last step is data drift monitoring with Evidently AI.  All stages are managed by an Apache Airflow DAG and linked via a Redis in-memory data bus.
 Storage is based on a One Big Table (OBT) design in MariaDB ColumnStore.
 
 All three classifiers reached a weighted F1-score of about 0.51 - that is almost random  performance which EDA confirms is due to the dataset's synthetic nature,
