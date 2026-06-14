@@ -4,7 +4,8 @@ Serves predictions via REST API using modular components
 """
 
 from fastapi import FastAPI, status, BackgroundTasks
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from typing import Union, List
 
@@ -23,6 +24,19 @@ app = FastAPI(
     description="FastAPI service for serving Random Forest predictions with Redis caching",
     version="1.0.0"
 )
+
+# ── Serve React frontend build ────────────────────────────────
+_DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"
+if _DIST.exists():
+    app.mount("/assets", StaticFiles(directory=str(_DIST / "assets")), name="assets")
+
+@app.get("/", response_class=FileResponse, include_in_schema=False)
+def frontend_root():
+    """Serve the React SPA index.html"""
+    index = _DIST / "index.html"
+    if index.exists():
+        return FileResponse(str(index))
+    return HTMLResponse("<h2>Frontend not built. Run <code>npm run build</code> in the frontend/ directory.</h2>", status_code=503)
 
 # Initialize Redis client on startup
 r = get_redis_client()
