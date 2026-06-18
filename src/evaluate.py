@@ -5,6 +5,7 @@ Loads model, evaluates on test set, logs metrics to MLflow, generates diagnostic
 
 import os
 from pathlib import Path
+import pandas as pd
 from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     confusion_matrix, classification_report, roc_auc_score, RocCurveDisplay,
@@ -41,6 +42,7 @@ def custom_local_init(self, artifact_uri, *args, **kwargs):
 LocalArtifactRepository.__init__ = custom_local_init
 
 from src.database import read_from_db
+from src.redis_client import get_redis_client, get_dataframe
 
 try:
     import seaborn as sns
@@ -52,36 +54,54 @@ FIGURES_DIR.mkdir(exist_ok=True)
 MODELS_DIR = Path(__file__).resolve().parent.parent / 'models'
 
 def evaluate():
-    """Evaluate trained model on test split, log metrics, and generate drift reports"""
+    """Evaluate trained model on test split, log metrics, and generate diagnostic plots"""
     print("📊 Task 5: Evaluating Model...")
     
     # Load model
-    model_file = MODELS_DIR / 'random_forest_model.pkl'
+    model_file = MODELS_DIR / 'best_model.pkl'
     if not model_file.exists():
         raise FileNotFoundError(f"Model file not found at {model_file}. Run training first.")
     
     model = joblib.load(model_file)
     
-    # Load processed data
-    df = read_from_db("SELECT * FROM processed_ecommerce_data")
-    X = df.drop('ad_clicked', axis=1)
-    y = df['ad_clicked']
+    # Load data from Redis (or fallback to DB)
+    r = get_redis_client()
+    test_X = None
+    test_y = None
     
-    # Test/train split (use same split as training for fair evaluation)
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
+    if r:
+        print("📥 Attempting to load test split from Redis...")
+        test_X = get_dataframe(r, 'dataset:test_X')
+        test_y = get_dataframe(r, 'dataset:test_y')
+        
+    if test_X is None or test_y is None:
+        print("⚠️ Test split not found in Redis. Falling back to loading from DB...")
+        df = read_from_db("SELECT * FROM processed_ecommerce_data")
+        target_col = 'ad_clicked'
+        meta_cols = ['pipeline_run_id', 'ingestion_ts']
+        X = df.drop(columns=[target_col] + [c for c in meta_cols if c in df.columns])
+        y = df[target_col]
+        
+        # Split using the same random state
+        from sklearn.model_selection import train_test_split
+        _, test_X, _, test_y = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+        
+    # Ensure test_y is a 1D Series
+    if isinstance(test_y, pd.DataFrame):
+        test_y = test_y.iloc[:, 0]
+        
+    print(f"📊 Test feature set shape: {test_X.shape}")
     
     # Test metrics
-    y_test_pred = model.predict(X_test)
-    test_accuracy = accuracy_score(y_test, y_test_pred)
-    precision = precision_score(y_test, y_test_pred)
-    recall = recall_score(y_test, y_test_pred)
-    f1 = f1_score(y_test, y_test_pred)
+    y_test_pred = model.predict(test_X)
+    test_accuracy = accuracy_score(test_y, y_test_pred)
+    precision = precision_score(test_y, y_test_pred)
+    recall = recall_score(test_y, y_test_pred)
+    f1 = f1_score(test_y, y_test_pred)
     
     try:
-        probs = model.predict_proba(X_test)[:, 1]
-        auc = roc_auc_score(y_test, probs)
+        probs = model.predict_proba(test_X)[:, 1]
+        auc = roc_auc_score(test_y, probs)
     except Exception:
         probs = None
         auc = None
@@ -93,10 +113,10 @@ def evaluate():
     if auc is not None:
         print(f"ROC AUC:           {auc:.4f}")
         
-    print(f"\n📋 Classification Report:\n{classification_report(y_test, y_test_pred)}")
+    print(f"\n📋 Classification Report:\n{classification_report(test_y, y_test_pred)}")
     
     # Save diagnostic plots
-    _save_plots(y_test, y_test_pred, probs)
+    _save_plots(test_y, y_test_pred, probs)
     
     # Log to MLflow
     mlflow_tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5001")
@@ -119,6 +139,7 @@ def evaluate():
                 
         print(f"✅ Evaluated metrics and logged plots to MLflow under experiment: E-Commerce Ad Click Prediction")
     print("✅ Model evaluation complete!")
+
 
 def _save_plots(y_test, y_test_pred, probs):
     """Save evaluation plots to figures directory"""

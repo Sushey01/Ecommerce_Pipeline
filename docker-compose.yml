@@ -12,7 +12,7 @@ services:
       retries: 5
 
   mariadb:
-    image: mariadb:10.11
+    image: mariadb:10.11                # Stable MariaDB (ColumnStore declared in database.py)
     container_name: mlops_mariadb
     ports:
       - "3310:3306"
@@ -83,7 +83,7 @@ services:
       - MLFLOW_TRACKING_URI=http://mlflow:5001
       - KAGGLE_USERNAME=shekharlamichhaneMagar
       - KAGGLE_KEY=KGAT_6f55fde860d9fb9720f0d597773474ba
-      - _PIP_ADDITIONAL_REQUIREMENTS=email-validator>=2.0.0 kaggle pandas numpy<2 scikit-learn mlflow redis pymysql cryptography joblib evidently shap matplotlib seaborn protobuf<4.22.0
+      - _PIP_ADDITIONAL_REQUIREMENTS=email-validator>=2.0.0 kaggle pandas numpy<2 scikit-learn mlflow redis pymysql cryptography joblib evidently shap matplotlib seaborn xgboost protobuf<4.22.0 great-expectations>=0.18.0,<1.0.0
     ports:
       - "8081:8080"
     depends_on:
